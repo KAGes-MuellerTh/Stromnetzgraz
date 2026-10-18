@@ -7,7 +7,6 @@ import json
 import logging
 import ssl
 import aiohttp
-import async_timeout
 import jwt
 
 from . import __version__
@@ -98,7 +97,7 @@ class StromNetzGraz:
             post_args["headers"][aiohttp.hdrs.AUTHORIZATION] = "Bearer " + self._jwt
 
         try:
-            async with async_timeout.timeout(self._timeout):
+            async with asyncio.timeout(self._timeout):
                 resp = await self.websession.post(API_ENDPOINT + path, **post_args)
             if resp.status != 200:
                 _LOGGER.error("Error connecting to API, response code %d", resp.status)

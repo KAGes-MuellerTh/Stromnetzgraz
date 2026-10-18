@@ -1,40 +1,38 @@
-# Python client library for Stromnetz Graz API
+# Stromnetz Graz für Home Assistant
 
-[![PyPI package](https://img.shields.io/badge/pip%20install-stromnetzgraz-brightgreen)](https://pypi.org/project/stromnetzgraz/) [![version number](https://img.shields.io/pypi/v/stromnetzgraz?color=green&label=version)](https://github.com/dreautall/stromnetzgraz/releases) [![License](https://img.shields.io/github/license/dreautall/stromnetzgraz)](https://github.com/dreautall/stromnetzgraz/blob/main/LICENSE)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/)
 
-This is a simple client library for the (unofficial) [Stromnetz Graz Smart Meter Web API](https://webportal.stromnetz-graz.at/).
+Custom Integration für Home Assistant, die die Smart-Meter-Daten aus dem (inoffiziellen) [Stromnetz Graz Webportal](https://webportal.stromnetz-graz.at/) abruft.
 
-Please note that you must be able to login and view data on the portal before this library will work. Please refer to Stromnetz Graz how to set up access to the smart meter statistics. Best results are achieved in the `IME` mode (15 minute reading intervals), however the library can also fall back to `IMS` (daily reading interval). The most recent data available will be the one for the previous day (see also their [FAQ](https://www.stromnetz-graz.at/sgg/stromzaehler/intelligenter-stromzaehler/faqs)).
+Dieses Repository ist ein Fork von [dreautall/stromnetzgraz](https://github.com/dreautall/stromnetzgraz). Die Python-Bibliothek `sngraz` ist direkt in der Integration enthalten (`custom_components/stromnetzgraz/sngraz`), die Home-Assistant-Integration basiert auf [dreautall/ha-stromnetzgraz](https://github.com/dreautall/ha-stromnetzgraz).
 
-## Example
+## Voraussetzungen
 
-```python
-from sngraz import StromNetzGraz
+Du musst dich im Webportal anmelden und dort die Verbrauchsdaten sehen können. Wie du den Zugang zu den Smart-Meter-Daten einrichtest, erklärt Stromnetz Graz. Am besten funktioniert der Modus `IME` (Messwerte alle 15 Minuten). Die Integration kommt aber auch mit `IMS` (ein Messwert pro Tag) zurecht. Die neuesten Daten sind immer die vom Vortag (siehe [FAQ](https://www.stromnetz-graz.at/sgg/stromzaehler/intelligenter-stromzaehler/faqs)).
 
-sn = StromNetzGraz(mail, password)
-await sn.authenticate()
-await sn.update_info()
+## Installation über HACS
 
-for installation in sn.get_installations():
-    print("Installation ID", installation._installation_id)
-    print("Installation is installed at", installation._address)
-    for meter in installation.get_meters():
-        print("Meter ID", meter.id)
-        print("Meter Name", meter._short_name)
-        await meter.fetch_consumption_data()
+1. In Home Assistant **HACS** öffnen.
+2. Rechts oben über das Drei-Punkte-Menü **Benutzerdefinierte Repositories** öffnen.
+3. Als Repository `https://github.com/KAGes-MuellerTh/Stromnetzgraz` eintragen und als Typ **Integration** wählen.
+4. In HACS nach **Stromnetz Graz** suchen und herunterladen.
+5. Home Assistant neu starten.
+6. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** nach **Stromnetz Graz** suchen und die Zugangsdaten zum Webportal eingeben.
 
-        # meter._data now contains the meter readings of the last 30 days
-        print(meter._data)
+### Manuelle Installation
 
-await sn.close_connection()
-```
+Den Ordner `custom_components/stromnetzgraz` in das Verzeichnis `config/custom_components/` deiner Home-Assistant-Installation kopieren und Home Assistant neu starten.
 
-*The example needs to run in an async context, please see [issue #6](https://github.com/dreautall/stromnetzgraz/issues/6) for an example if you want to run it standalone.*
+## Was die Integration bereitstellt
 
-An `installation` is usually an house or apartment with an individual address and may contain multiple meters (for example a second meter for a hot water boiler). A `meter` is the actual single meter.
+Für jeden Zähler werden angelegt:
 
-Stromnetz Graz assigns individual numerical IDs to both `installation`s and `meter`s. The usually used meter number (33 characters usually starting with `AT00`) is available as attributes (`meter._name` & `meter._short_name`).
+- **Meter Reading**: der letzte Zählerstand in kWh (für das Energie-Dashboard geeignet)
+- **Meter Consumption**: der letzte Verbrauch in kWh
+- **Externe Statistik** `stromnetzgraz:energy_consumption_<Zähler-ID>`: der stündliche Verbrauch. Beim ersten Start werden bis zu 5 Jahre rückwirkend importiert. Diese Statistik kannst du im Energie-Dashboard als Netzbezug eintragen.
 
-## Home Assistant Integration
+Die Daten werden stündlich abgefragt.
 
-This library is used in my Home Assistant Custom Component [ha-stromnetzgraz](https://github.com/dreautall/ha-stromnetzgraz), available via HACS. It allows you to have your Smart Meter readings inside Home Assistant! See the [ha-stromnetzgraz repository](https://github.com/dreautall/ha-stromnetzgraz) for more details.
+## Lizenz
+
+MIT, siehe [LICENSE](LICENSE).
