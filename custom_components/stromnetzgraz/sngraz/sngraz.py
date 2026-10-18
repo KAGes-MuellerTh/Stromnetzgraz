@@ -172,6 +172,10 @@ class StromNetzGraz:
         for _inst in res:
             if not (installation_id := _inst.get("installationID")):
                 continue
+            # Keep existing objects, so references to them stay valid
+            if installation := self._installations.get(installation_id):
+                installation.update_info(_inst)
+                continue
             self._installations[installation_id] = SNGrazInstallation(
                 installation_id, self, _inst
             )
@@ -216,14 +220,22 @@ class SNGrazInstallation:
         """
         self._sn: StromNetzGraz = sn
         self._installation_id: str = installation_id
+        self._meters: dict[int, SNGrazMeter] = {}
+        self.update_info(info)
+
+    def update_info(self, info: dict) -> None:
+        """Update installation info from a getInstallations entry."""
         self._customer_id: int = info.get("customerID")
         self._customer_number: int = info.get("customerNumber")
         self._installation_number: int = info.get("installationNumber")
         self._address: str = info.get("address")
-        self._meters: dict[int, SNGrazMeter] = {}
+        self._delivery_direction: Optional[str] = info.get("deliveryDirection")
 
         for _meter in info.get("meterPoints"):
             if not (meter_id := _meter.get("meterPointID")):
+                continue
+            if meter := self._meters.get(meter_id):
+                meter.update_info(_meter)
                 continue
             self._meters[meter_id] = SNGrazMeter(meter_id, self, _meter)
 
@@ -272,10 +284,8 @@ class SNGrazMeter:
         """
         self._sn_inst: SNGrazInstallation = sn_inst
         self._meter_id: str = meter_id
-        self._name: str = info.get("name")
-        self._short_name: str = info.get("shortName")
-        self._opt_state: str = info.get("optState").get("currentOptState")
         self._data: Optional[list[dict]] = None
+        self.update_info(info)
 
         self._first_reading: Optional[int] = None
         self._first_reading_date: Optional[dt.datetime] = None
@@ -283,6 +293,24 @@ class SNGrazMeter:
         self._last_consumption: Optional[int] = None
         self._last_reading_date: Optional[dt.datetime] = None
         self._last_reading: Optional[int] = None
+
+    def update_info(self, info: dict) -> None:
+        """Update meter info from a getInstallations meterPoints entry."""
+        self._name: str = info.get("name")
+        self._short_name: str = info.get("shortName")
+        self._opt_state: str = info.get("optState").get("currentOptState")
+        self._pending_opt_state: Optional[str] = info.get("optState").get(
+            "pendingOptState"
+        )
+        self._display_state: Optional[str] = (info.get("displayState") or {}).get(
+            "currentDisplayState"
+        )
+        self._customer_interface_state: Optional[str] = (
+            info.get("customerInterfaceState") or {}
+        ).get("currentCustomerInterfaceState")
+        self._accounting_period: Optional[str] = (
+            info.get("accountingPeriode") or {}
+        ).get("currentAccountingPeriode")
 
     async def fetch_consumption_data(self, days: int = 30) -> None:
         """Update consumption info asynchronously.
@@ -450,6 +478,36 @@ class SNGrazMeter:
     def lastMeterReading(self) -> Optional[int]:
         """Return the latest meter reading."""
         return self._last_reading
+
+    @property
+    def lastMeterReadingTime(self) -> Optional[dt.datetime]:
+        """Return the time of the latest meter reading."""
+        return self._last_reading_date
+
+    @property
+    def optState(self) -> Optional[str]:
+        """Return the data mode (OptIn = 15 min, OptMiddle = daily, OptOut = none)."""
+        return self._opt_state
+
+    @property
+    def pendingOptState(self) -> Optional[str]:
+        """Return the requested but not yet active data mode."""
+        return self._pending_opt_state
+
+    @property
+    def displayState(self) -> Optional[str]:
+        """Return whether consumption is shown on the meter display."""
+        return self._display_state
+
+    @property
+    def customerInterfaceState(self) -> Optional[str]:
+        """Return whether the meter's customer interface is enabled."""
+        return self._customer_interface_state
+
+    @property
+    def accountingPeriod(self) -> Optional[str]:
+        """Return the accounting period (Monthly/Yearly)."""
+        return self._accounting_period
 
 
 class InvalidLogin(Exception):

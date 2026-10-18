@@ -28,6 +28,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    EntityCategory,
     UnitOfEnergy,
     CONF_BASE,
 )
@@ -67,6 +68,39 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    SensorEntityDescription(
+        key="lastMeterReadingTime",
+        name="Last Reading",
+        icon="mdi:clock-check-outline",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="optState",
+        name="Data Mode",
+        icon="mdi:chart-timeline-variant",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="customerInterfaceState",
+        name="Customer Interface",
+        icon="mdi:ethernet",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="displayState",
+        name="Display",
+        icon="mdi:monitor",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="accountingPeriod",
+        name="Accounting Period",
+        icon="mdi:calendar-range",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
 )
 
@@ -148,6 +182,13 @@ class SNGrazSensor(SensorEntity, CoordinatorEntity["SNGrazDataCoordinator"]):
         return getattr(self._meter, self.entity_description.key)
 
     @property
+    def extra_state_attributes(self):
+        """Return additional attributes of the sensor."""
+        if self.entity_description.key == "optState":
+            return {"pending": self._meter.pendingOptState}
+        return None
+
+    @property
     def device_info(self):
         """Return the device_info of the device."""
         return DeviceInfo(
@@ -172,6 +213,11 @@ class SNGrazDataCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         """Update data via API."""
+        try:
+            # Refresh meter settings (data mode, customer interface, ...)
+            await self._installation._sn.update_info()
+        except (asyncio.TimeoutError, aiohttp.ClientError) as err:
+            _LOGGER.warning("Could not refresh installation info: %s", err)
         await self._installation.fetch_consumption_data()
         await self._insert_statistics()
 

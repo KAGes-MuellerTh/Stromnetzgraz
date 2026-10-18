@@ -31,6 +31,13 @@ Für jeden Zähler werden angelegt:
 - **Meter Consumption**: der letzte Verbrauch in kWh
 - **Externe Statistik** `stromnetzgraz:energy_consumption_<Zähler-ID>`: der stündliche Verbrauch. Beim ersten Start werden bis zu 5 Jahre rückwirkend importiert. Diese Statistik kannst du im Energie-Dashboard als Netzbezug eintragen.
 
+Zusätzlich gibt es Diagnose-Sensoren:
+
+- **Last Reading**: Zeitpunkt des letzten gültigen Zählerstands. Die 15-Minuten-Werte kommen meist mit etwa einem halben Tag Verzögerung.
+- **Data Mode**: der Datenmodus `OptIn` (15-Minuten-Werte), `OptMiddle` (Tageswerte) oder `OptOut` (keine Daten). Ein beantragter Wechsel steht im Attribut `pending`.
+- **Customer Interface**: ob die Kundenschnittstelle am Zähler aktiviert ist (`On`/`Off`).
+- **Display** und **Accounting Period** (standardmäßig deaktiviert): ob der Verbrauch am Zählerdisplay angezeigt wird und ob monatlich oder jährlich abgerechnet wird.
+
 Die Daten werden stündlich abgefragt.
 
 ## Diagnose-Daten

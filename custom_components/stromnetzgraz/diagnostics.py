@@ -47,6 +47,10 @@ TO_REDACT = {
     "iban",
     "birthDate",
     "token",
+    "customerInterfaceKey",
+    "key",
+    # Keyed by meter id
+    "base",
 }
 
 # Number of raw readings to include per meter, to keep the file small
