@@ -14,7 +14,7 @@ from homeassistant.const import (
     CONF_PASSWORD,
 )
 
-from .sngraz import StromNetzGraz, InvalidLogin
+from .sngraz import StromNetzGraz, InvalidLogin, create_ssl_context
 from .const import DOMAIN
 
 PLATFORMS = [Platform.SENSOR]
@@ -24,7 +24,10 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Stromnetz Graz from a config entry."""
 
-    conn = StromNetzGraz(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
+    ssl_context = await hass.async_add_executor_job(create_ssl_context)
+    conn = StromNetzGraz(
+        entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD], ssl_context=ssl_context
+    )
 
     hass.data[DOMAIN] = conn
 

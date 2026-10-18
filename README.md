@@ -16,7 +16,7 @@ Du musst dich im Webportal anmelden und dort die Verbrauchsdaten sehen können. 
 2. Rechts oben über das Drei-Punkte-Menü **Benutzerdefinierte Repositories** öffnen.
 3. Als Repository `https://github.com/KAGes-MuellerTh/Stromnetzgraz` eintragen und als Typ **Integration** wählen.
 4. In HACS nach **Stromnetz Graz** suchen und herunterladen.
-5. Home Assistant neu starten.
+5. Home Assistant neu starten (mindestens Version 2025.10).
 6. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** nach **Stromnetz Graz** suchen und die Zugangsdaten zum Webportal eingeben.
 
 ### Manuelle Installation
@@ -32,6 +32,12 @@ Für jeden Zähler werden angelegt:
 - **Externe Statistik** `stromnetzgraz:energy_consumption_<Zähler-ID>`: der stündliche Verbrauch. Beim ersten Start werden bis zu 5 Jahre rückwirkend importiert. Diese Statistik kannst du im Energie-Dashboard als Netzbezug eintragen.
 
 Die Daten werden stündlich abgefragt.
+
+## Diagnose-Daten
+
+Unter **Einstellungen → Geräte & Dienste → Stromnetz Graz → ⋮ → Diagnosedaten herunterladen** bekommst du eine JSON-Datei mit den rohen API-Antworten. Persönliche Daten wie Adresse, Kundennummer, Zählpunkt und Zugangsdaten sind darin geschwärzt. Die Zusammenfassung `getMeterReading_summary` zeigt, welche Messwert-Typen (`readingTypes`) dein Zähler liefert. So lässt sich herausfinden, ob die API mehr liefert, als die Integration bisher nutzt, z. B. Einspeisung.
+
+Hinweis: Felder, die die Integration noch nicht kennt, werden nur geschwärzt, wenn ihr Name auf der Liste in `diagnostics.py` steht. Schau die Datei deshalb kurz durch, bevor du sie weitergibst.
 
 ## Lizenz
 

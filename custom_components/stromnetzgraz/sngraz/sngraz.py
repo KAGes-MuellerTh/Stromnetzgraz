@@ -16,6 +16,18 @@ DEFAULT_TIMEOUT = 10
 _LOGGER = logging.getLogger(__name__)
 
 
+def create_ssl_context() -> ssl.SSLContext:
+    """Create the SSL context for the API, including the bundled certificate chain.
+
+    This does blocking I/O, so call it from an executor when inside an event loop.
+    """
+    sslcontext = ssl.create_default_context()
+    sslcontext.load_verify_locations(
+        cafile=os.path.join(os.path.dirname(__file__), "certchain.crt")
+    )
+    return sslcontext
+
+
 class StromNetzGraz:
     def __init__(
         self,
@@ -24,6 +36,7 @@ class StromNetzGraz:
         timeout: int = DEFAULT_TIMEOUT,
         websession: Optional[aiohttp.ClientSession] = None,
         time_zone: Optional[dt.tzinfo] = None,
+        ssl_context: Optional[ssl.SSLContext] = None,
     ) -> None:
         """Initialize Stromnetz Graz API access
 
@@ -31,13 +44,10 @@ class StromNetzGraz:
         :param password: The password to access the Stromnetz Graz API with.
         :param websession: The websession to use when communicating with the API.
         :param time_zone: The time zone to display times in and to use.
+        :param ssl_context: SSL context for the websession, see create_ssl_context().
         """
         if websession is None:
-            sslcontext = ssl.create_default_context()
-            sslcontext.load_verify_locations(
-                cafile=os.path.join(os.path.dirname(__file__), "certchain.crt")
-            )
-            conn = aiohttp.TCPConnector(ssl=sslcontext)
+            conn = aiohttp.TCPConnector(ssl=ssl_context or create_ssl_context())
             self.websession = aiohttp.ClientSession(
                 headers={aiohttp.hdrs.USER_AGENT: f"pySNGraz/{__version__}"},
                 connector=conn,
