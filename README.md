@@ -14,7 +14,7 @@ Du musst dich im Webportal anmelden und dort die Verbrauchsdaten sehen können. 
 
 1. In Home Assistant **HACS** öffnen.
 2. Rechts oben über das Drei-Punkte-Menü **Benutzerdefinierte Repositories** öffnen.
-3. Als Repository `https://github.com/KAGes-MuellerTh/Stromnetzgraz` eintragen und als Typ **Integration** wählen.
+3. Als Repository `https://github.com/RookieIVG/Stromnetzgraz` eintragen und als Typ **Integration** wählen.
 4. In HACS nach **Stromnetz Graz** suchen und herunterladen.
 5. Home Assistant neu starten (mindestens Version 2025.10).
 6. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** nach **Stromnetz Graz** suchen und die Zugangsdaten zum Webportal eingeben.

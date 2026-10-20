@@ -1,12 +1,12 @@
 {
   "domain": "stromnetzgraz",
   "name": "Stromnetz Graz",
-  "codeowners": ["@KAGes-MuellerTh"],
+  "codeowners": ["@RookieIVG"],
   "config_flow": true,
   "dependencies": ["recorder"],
-  "documentation": "https://github.com/KAGes-MuellerTh/Stromnetzgraz",
+  "documentation": "https://github.com/RookieIVG/Stromnetzgraz",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/KAGes-MuellerTh/Stromnetzgraz/issues",
+  "issue_tracker": "https://github.com/RookieIVG/Stromnetzgraz/issues",
   "requirements": ["pandas"],
-  "version": "0.4.2"
+  "version": "0.4.3"
 }
