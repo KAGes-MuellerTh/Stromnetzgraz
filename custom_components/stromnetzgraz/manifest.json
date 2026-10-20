@@ -8,5 +8,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/KAGes-MuellerTh/Stromnetzgraz/issues",
   "requirements": ["pandas"],
-  "version": "0.4.0"
+  "version": "0.4.1"
 }
